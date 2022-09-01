@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Document</title>
 </head>
 <body>
@@ -21,23 +22,35 @@
             var block_img = new Image();
             var bomba_img = new Image();
             var bomba;
+            var boom = new Audio();
+            var song = new Audio();
+            var song_timer;
+            var rest;
+            var pausa;
 
             function run(){
                 canvas = document.getElementById("canvas");
                 context = canvas.getContext("2d");
                 direction = "down";
-                
+                rest = 0;
+                pausa = false;
                 setBlocks();
+                
                 player = new entity(50, 50, 50, 50, "white", 0);
                 player_img.src = "player-down.png";
                 solid_img.src = "solids.png";
                 block_img.src = "blocks.png";
                 bomba_img.src = "bomb.png";
                 bomba = new bomb(0, 1500, "black");
+                boom.src = "boom.mp3";
+                song.src = "song.mp3";
+                song.volume = 0.4;
+                song_timer = 0;
                 paint();
             }
             function update(){
-                
+                if(song_timer == 11040)
+                song_timer++;
                 for(var val of block){
                     if(player.se_tocan(val)){
                         switch(direction){
@@ -63,9 +76,39 @@
                         }
                     }
                 }
+                
+                
+                    if(player.se_tocan(bomba)){
+                        switch(direction){
+                            case "up":
+                                
+                                player.y += 50;
+                                break;
 
+                            case "left":  
+                                
+                                player.x += 50;
+                                break;
+
+                            case "down":
+                                
+                                player.y -= 50;
+                                break;
+
+                            case "right":
+                                
+                                player.x -= 50;
+                                break;
+                        }
+                    }
+                
+                
                 if(bomba.active){
+                    if(bomba.count == 95){
+                        boom.play();
+                    }
                     if(bomba.count >= 100){
+                        
                         bomba.explosion(context, block);
                         if(bomba.count == 130){
                             bomba.exploded();
@@ -73,6 +116,12 @@
                     }
                     bomba.count++;
                     
+                }
+                
+                if(rest == 0){
+                    
+                    context.fillStyle = "black";
+                    context.fillText("Terminado", 1055, 450);
                 }
             }
 
@@ -85,16 +134,15 @@
                 context.fillStyle = "rgb(200,200,200)";
                 context.fillRect(1050, 0, 200,850); 
 
+                context.fillStyle = "rgb(100,100,100)";
+                context.font = "35px Console";
+                context.fillText("Restante: " + rest, 1060, 150);
+
+                context.drawImage(bomba_img, bomba.x, bomba.y,50,50);
                 context.drawImage(player_img, player.x, player.y, 50,50);
                 
-                context.drawImage(bomba_img, bomba.x, bomba.y,50,50)
-                for(var i = 0; i < solids.length; i++){
-                    //agregar if para tipo e imprimir imagen requerida
-                    
-                    
-                }
-                update();
-                for(var val of block){
+                if(pausa){
+                    for(var val of block){
                     if(val.type == 1){
                         context.drawImage(solid_img, val.x, val.y, 50,50);
                     }
@@ -102,9 +150,26 @@
                         context.drawImage(block_img, val.x, val.y, 50,50);
                     }
                     
-                }
-                
+                    }
+                    context.fillStyle = "rgba(100,100,100,0.7)";
+                    context.fillRect(0,0,1050,850);
 
+                    context.fillStyle = "black";
+                    context.fillText("PAUSE", 1060, 700);
+
+                }
+                else{
+                    update();
+                    for(var val of block){
+                    if(val.type == 1){
+                        context.drawImage(solid_img, val.x, val.y, 50,50);
+                    }
+                    else if(val.type == 2){
+                        context.drawImage(block_img, val.x, val.y, 50,50);
+                    }
+                    
+                    }
+                }
                 
                 
             }
@@ -131,12 +196,13 @@
                         
                     }
                 }
+                
                 this.destroyed = function(){
                     this.x = -100;
                     this.y = 0;
                     this.height = 0;
                     this.width = 0;
-
+                    rest--;
                 }
             }
             function bomb(x, y, color){
@@ -147,6 +213,7 @@
                 this.color = color;
                 this.type = 3;
                 this.active = false;
+                this.solid = false;
                 //this.explode = false;
                 this.count = 0;
 
@@ -155,6 +222,7 @@
                     this.x = x;
                     this.y = y;
                     this.active = true;
+                    
                     context.drawImage(bomba_img, this.x, this.y, 50, 50)
                 }
                 this.explosion = function(context, target){
@@ -202,39 +270,57 @@
                     this.y = 1500;
                     this.active = false;
                     this.count = 0;
+                    this.solid = false;
                 }
             }
             
             document.addEventListener("keydown",function(e){
-                switch(e.key){
-                    case "w":
-                        direction = "up";
-                        player.y -= 50;
-                        player_img.src = "player-up.png";
-                        break;
+                if(!pausa){
+                    song.play();
+                    switch(e.key){
+                        case "w":
+                            direction = "up";
 
-                    case "a":  
-                        direction = "left";
-                        player.x -= 50;
-                        player_img.src = "player-left.png";
-                        break;
+                           player.y -= 50;
+                            player_img.src = "player-up.png";
+                            break;
 
-                    case "s":
-                        direction = "down";
-                        player.y += 50;
-                        player_img.src = "player-down.png";
-                        break;
+                        case "a":  
+                            direction = "left";
 
-                    case "d":
-                        direction = "right";
-                        player.x += 50;
-                        player_img.src = "player-right.png";
-                        break;
-                    case " ":
+                            player.x -= 50;
+                            player_img.src = "player-left.png";
+                            break;
+
+                        case "s":
+                            direction = "down";
                         
-                        if(!bomba.active){
-                            bomba.place(context, player.x, player.y);
-                        }
+                            player.y += 50;
+                            player_img.src = "player-down.png";
+                            break;
+
+                        case "d":
+                            direction = "right";
+                        
+                            player.x += 50;
+                            player_img.src = "player-right.png";
+                            break;
+                        case " ":
+                        
+                            if(!bomba.active){
+                                bomba.place(context, player.x, player.y);
+                            }
+                            break;
+                        case "p":
+                            pausa = true;
+                            song.pause();      
+                    }
+                }
+                else{
+                    if(e.key == "p"){
+                        pausa = false;
+                        song.play();
+                    }
                 }
             })
 
@@ -272,6 +358,7 @@
                             //estos son bloques destruibles que deben estar
                             block[i] = new entity(x, y, 50, 50, "rgb(200, 100, 150)", 2);
                             i++;
+                            rest++;
                         }
                         else{
                             var flag = false
@@ -282,9 +369,10 @@
                                 }
                             }
                             if(!flag){
-                                var random = Math.round(Math.random() * 3);
+                                var random = Math.round(Math.random() * 4);
                                 if(random == 1){
                                     block[i] = new entity(x, y, 50, 50, "rgb(200, 100, 150)", 2);
+                                    rest++;
                                     i++;
                                 }
                             }
