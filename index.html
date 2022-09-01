@@ -24,8 +24,9 @@
             var bomba;
             var boom = new Audio();
             var song = new Audio();
-            var song_timer;
+            var timer;
             var rest;
+            var frame;
             var pausa;
 
             function run(){
@@ -34,6 +35,8 @@
                 direction = "down";
                 rest = 0;
                 pausa = false;
+                timer = 0;
+                frame = 0;
                 setBlocks();
                 
                 player = new entity(50, 50, 50, 50, "white", 0);
@@ -49,8 +52,6 @@
                 paint();
             }
             function update(){
-                if(song_timer == 11040)
-                song_timer++;
                 for(var val of block){
                     if(player.se_tocan(val)){
                         switch(direction){
@@ -119,9 +120,16 @@
                 }
                 
                 if(rest == 0){
-                    
+                    frame = 100;
                     context.fillStyle = "black";
                     context.fillText("Terminado", 1055, 450);
+                }
+                if(frame != 100){
+                    frame++;
+                }
+                if(frame == 60){
+                    timer++;
+                    frame = 0;
                 }
             }
 
@@ -136,7 +144,8 @@
 
                 context.fillStyle = "rgb(100,100,100)";
                 context.font = "35px Console";
-                context.fillText("Restante: " + rest, 1060, 150);
+                context.fillText("Tiempo: " + timer, 1060,100);
+                context.fillText("Restante: " + rest, 1060, 350);
 
                 context.drawImage(bomba_img, bomba.x, bomba.y,50,50);
                 context.drawImage(player_img, player.x, player.y, 50,50);
