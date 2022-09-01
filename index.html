@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+        <canvas id="canvas" height="850" width="1250">
+            Su navegador no soporta Canvas.
+        </canvas>
+
+        <script>
+            var canvas, context;
+            var direction;
+            var solids = [], block = [];
+            var player;
+            var player_img = new Image();
+            var solid_img = new Image();
+            var block_img = new Image();
+            var bomba_img = new Image();
+            var bomba;
+
+            function run(){
+                canvas = document.getElementById("canvas");
+                context = canvas.getContext("2d");
+                direction = "down";
+                
+                setBlocks();
+                player = new entity(50, 50, 50, 50, "white", 0);
+                player_img.src = "player-down.png";
+                solid_img.src = "solids.png";
+                block_img.src = "blocks.png";
+                bomba_img.src = "bomb.png";
+                bomba = new bomb(0, 1500, "black");
+                paint();
+            }
+            function update(){
+                
+                for(var val of block){
+                    if(player.se_tocan(val)){
+                        switch(direction){
+                            case "up":
+                                
+                                player.y += 50;
+                                break;
+
+                            case "left":  
+                                
+                                player.x += 50;
+                                break;
+
+                            case "down":
+                                
+                                player.y -= 50;
+                                break;
+
+                            case "right":
+                                
+                                player.x -= 50;
+                                break;
+                        }
+                    }
+                }
+
+                if(bomba.active){
+                    if(bomba.count >= 100){
+                        bomba.explosion(context, block);
+                        if(bomba.count == 130){
+                            bomba.exploded();
+                        }
+                    }
+                    bomba.count++;
+                    
+                }
+            }
+
+            function paint(){
+
+                window.requestAnimationFrame(paint);
+                context.fillStyle = "green";
+                context.fillRect(0, 0, 1050, 850);
+
+                context.fillStyle = "rgb(200,200,200)";
+                context.fillRect(1050, 0, 200,850); 
+
+                context.drawImage(player_img, player.x, player.y, 50,50);
+                
+                context.drawImage(bomba_img, bomba.x, bomba.y,50,50)
+                for(var i = 0; i < solids.length; i++){
+                    //agregar if para tipo e imprimir imagen requerida
+                    
+                    
+                }
+                update();
+                for(var val of block){
+                    if(val.type == 1){
+                        context.drawImage(solid_img, val.x, val.y, 50,50);
+                    }
+                    else if(val.type == 2){
+                        context.drawImage(block_img, val.x, val.y, 50,50);
+                    }
+                    
+                }
+                
+
+                
+                
+            }
+
+            function entity(x,y,height,width,color,type){
+                this.x = x;
+                this.y = y;
+                this.height = height;
+                this.width = width;
+                this.color = color;
+                //type 0 = jugador, 1 = bloque sólido, 2 = bloque destruible, 3 = bomba
+                this.type = type;
+
+                
+                this.se_tocan = function (target) { 
+                    if(this.x < target.x + target.width &&
+                    this.x + this.width > target.x && 
+                    this.y < target.y + target.height && 
+                    this.y + this.height > target.y){
+                        if(target.type == 1 || target.type == 2){
+                            return true;    
+                        }
+                        
+                        
+                    }
+                }
+                this.destroyed = function(){
+                    this.x = -100;
+                    this.y = 0;
+                    this.height = 0;
+                    this.width = 0;
+
+                }
+            }
+            function bomb(x, y, color){
+                this.x = x;
+                this.y = y;
+                this.height = 50;
+                this.width = 50;
+                this.color = color;
+                this.type = 3;
+                this.active = false;
+                //this.explode = false;
+                this.count = 0;
+
+                
+                this.place = function(context,x,y){
+                    this.x = x;
+                    this.y = y;
+                    this.active = true;
+                    context.drawImage(bomba_img, this.x, this.y, 50, 50)
+                }
+                this.explosion = function(context, target){
+                    context.fillStyle = "red"
+                    for(var i of target){
+                        context.fillRect(this.x, this.y - 50, this.width, this.height);
+                        context.fillRect(this.x, this.y + 50, this.width, this.height);
+                        context.fillRect(this.x - 50, this.y, this.width, this.height);
+                        context.fillRect(this.x + 50, this.y, this.width, this.height);
+                        context.fillRect(this.x, this.y, this.width, this.height);
+                        if(this.x == i.x && this.y - 50 == i.y && i.type != 1){
+                            if(i.type == 2){
+                                i.destroyed();
+                                
+                            }
+                            
+                        }
+                        if(this.x == i.x && this.y + 50 == i.y && i.type != 1){
+                            if(i.type == 2){
+                                i.destroyed();
+                                
+                            }
+                            
+                        }
+                        if(this.x - 50 == i.x && this.y == i.y && i.type != 1){
+                            if(i.type == 2){
+                                i.destroyed();
+                                
+                            }
+                            
+                        }
+                        if(this.x + 50 == i.x && this.y == i.y && i.type != 1){
+                            if(i.type == 2){
+                                i.destroyed();
+                                
+                            }
+                            
+                        }
+
+                    }
+                    
+                }
+                this.exploded = function(context){
+                    this.x = 0;
+                    this.y = 1500;
+                    this.active = false;
+                    this.count = 0;
+                }
+            }
+            
+            document.addEventListener("keydown",function(e){
+                switch(e.key){
+                    case "w":
+                        direction = "up";
+                        player.y -= 50;
+                        player_img.src = "player-up.png";
+                        break;
+
+                    case "a":  
+                        direction = "left";
+                        player.x -= 50;
+                        player_img.src = "player-left.png";
+                        break;
+
+                    case "s":
+                        direction = "down";
+                        player.y += 50;
+                        player_img.src = "player-down.png";
+                        break;
+
+                    case "d":
+                        direction = "right";
+                        player.x += 50;
+                        player_img.src = "player-right.png";
+                        break;
+                    case " ":
+                        
+                        if(!bomba.active){
+                            bomba.place(context, player.x, player.y);
+                        }
+                }
+            })
+
+            function setBlocks(){
+                var i = 0;
+                for(var x = 0; x < 1050; x += 50){
+                    for(var y = 0; y < 850; y += 50){
+                        if(y == 0 || y == 800){
+                            block[i] = new entity(x, y, 50, 50, "gray", 1);
+                            i++;
+                        }
+                        else if(x == 0 || x == 1000){
+                            block[i] = new entity(x, y, 50, 50, "gray", 1);
+                            i++;
+                        }
+                    }
+                }
+                
+                for(var x = 100; x < 950; x += 100){
+                    for(var y = 100; y < 750; y += 100){
+                        block[i] = new entity(x, y, 50, 50,"gray", 1);
+                        i++;
+                    }
+                }
+
+                for(var x = 50; x < 1000; x += 50){
+                    for(var y = 50; y < 800; y += 50){
+                        if((x == 50 && y == 50) ||
+                        (x == 100 && y == 50) ||
+                        (x == 50 && y == 100)){
+                            //estos son espacios vacíos que deben estar
+                        }
+                        else if((x == 150 && y == 50) ||
+                        (x == 50 && y == 150)){
+                            //estos son bloques destruibles que deben estar
+                            block[i] = new entity(x, y, 50, 50, "rgb(200, 100, 150)", 2);
+                            i++;
+                        }
+                        else{
+                            var flag = false
+                            for(var val of block){
+                                if(x == val.x && y == val.y){
+                                    flag = true;
+                                    break;
+                                }
+                            }
+                            if(!flag){
+                                var random = Math.round(Math.random() * 3);
+                                if(random == 1){
+                                    block[i] = new entity(x, y, 50, 50, "rgb(200, 100, 150)", 2);
+                                    i++;
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+            }
+
+            window.addEventListener("load", run, false);
+            window.requestAnimationFrame = (function () {
+            return window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+                function (callback) {
+                    window.setTimeout(callback, 17);
+                };
+            }());
+        </script>
+</body>
+</html>
