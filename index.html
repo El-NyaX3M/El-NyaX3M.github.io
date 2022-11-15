@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div id="contenedor">
+        <button @click="fcfs">FCFS</button>
+        <button @click="sjn">SJN</button>
+        <button @click="pd">Prioridad Dinámica</button>
+        <button @click="pe">Prioridad Estática</button>
+        <button @click="srt">SRT</button>
+        <button @click="rr">Ronda Robin</button>
+        <div v-if="opcion === 1">
+            <h1>FCFS</h1>
+            <br>
+            <table>
+                <thead>
+                    
+                </thead>
+            </table>
+        </div>
+        <div v-else-if="opcion === 2">
+            <h1>SJN</h1>
+        </div>
+        <div v-else-if="opcion === 3">
+            <h1>Prioridad Dinámica</h1>
+        </div>
+        <div v-else-if="opcion === 4">
+            <h1>Prioridad Estática</h1>
+        </div>
+        <div v-else-if="opcion === 5">
+            <h1>SRT</h1>
+        </div>
+        <div v-else-if="opcion === 6">
+            <h1>Ronda Robin</h1>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="vue.js"></script>
+</html>
