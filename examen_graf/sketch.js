@@ -29,7 +29,6 @@ function draw(){
 
 function cortar(){
     slices = parseInt(document.getElementById("number").value);
-    document.getElementById("m").innerHTML = Math.cos(2 * Math.PI / slices);
     puntospp = circ1.sacarLineas(slices);
     puntosdda = circ2.sacarLineas(slices);
     puntosbres = circ3.sacarLineas(slices);
